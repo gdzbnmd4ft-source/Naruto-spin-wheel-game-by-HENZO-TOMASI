@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Naruto Shinobi Adventure V19</title>
+<style>
+:root{
+  --bg:#0e1016;--panel:#171a22;--card:#1d2230;--text:#f4f6fb;--muted:#aab1c0;
+  --accent:#ff6b35;--accent2:#6c63ff;--border:#31384a;--good:#3ddc97;--bad:#ff5d73;
+}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#0b0d12,#121722);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+button{font:inherit;color:inherit} .app{max-width:1200px;margin:auto;padding:16px}.row{display:flex;gap:12px;flex-wrap:wrap}.between{justify-content:space-between;align-items:center}.grid{display:grid;gap:12px}.g2{grid-template-columns:1.15fr .85fr}.g4{grid-template-columns:repeat(4,1fr)}.g6{grid-template-columns:repeat(6,1fr)}.g8{grid-template-columns:repeat(8,1fr)}
+@media(max-width:900px){.g2,.g4,.g6,.g8{grid-template-columns:1fr 1fr}}@media(max-width:560px){.g2,.g4,.g6,.g8{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:16px}.stat{background:#141924;border:1px solid var(--border);border-radius:14px;padding:12px}.stat small{color:var(--muted);display:block}.big{font-size:1.5rem;font-weight:800}.muted{color:var(--muted)}.hidden{display:none!important}.btn{min-height:46px;padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:#151a24;cursor:pointer}.btn.primary{background:#2a2030;border-color:#6c4bff}.btn:disabled{opacity:.45;cursor:not-allowed}.wheelwrap{position:relative;max-width:430px;margin:0 auto}.pointer{position:absolute;z-index:3;left:50%;top:-2px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:28px solid white}.spin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px;border-radius:50%;background:#2a2030;border:2px solid #6c4bff;font-weight:900;cursor:pointer}.sheetline{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border);padding:8px 0}.tag{display:inline-block;border:1px solid var(--border);padding:3px 8px;border-radius:999px;font-size:.78rem}.danger{color:#ff9eaa}.good{color:#7ff0bd}.logline{border-bottom:1px solid var(--border);padding:8px 0}.sectiontitle{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="app" class="app">
+  <div class="row between">
+    <div><div class="sectiontitle">Naruto Shinobi Adventure</div><div id="title" class="big">Build Your Shinobi — V19</div></div>
+    <button id="restart" class="btn">Restart Story</button>
+  </div>
+
+  <section id="build" class="grid g2" style="margin-top:14px">
+    <div class="card">
+      <div class="row between"><strong id="cat"></strong><span id="step" class="muted"></span></div>
+      <div class="wheelwrap" style="margin-top:12px"><div class="pointer"></div><svg id="buildWheel" viewBox="0 0 420 420" style="width:100%"></svg><button id="spinBuild" class="spin">SPIN</button></div>
+      <div id="buildStatus" class="muted" style="text-align:center;margin-top:10px"></div>
+    </div>
+    <aside class="card"><strong>Character Sheet</strong><div id="profile" style="margin-top:10px"></div></aside>
+  </section>
+
+  <section id="adv" class="hidden" style="margin-top:14px">
+    <div class="grid g8">
+      <div class="stat"><small>HP</small><div id="hp"></div></div>
+      <div class="stat"><small>Chakra</small><div id="chakra"></div></div>
+      <div class="stat"><small>Power</small><div id="power"></div></div>
+      <div class="stat"><small>Wins</small><div id="wins"></div></div>
+      <div class="stat"><small>Victory Power</small><div id="victoryBonus"></div></div>
+      <div class="stat"><small>Bijū Form</small><div id="form"></div></div>
+      <div class="stat"><small>Status</small><div id="status"></div></div>
+      <div class="stat"><small>Power Cap</small><div>6500</div></div>
+    </div>
+
+    <div class="card" style="margin-top:12px"><strong>Progression</strong><div id="progression" class="grid g6" style="margin-top:10px"></div></div>
+
+    <div id="mainCard" class="card" style="margin-top:12px">
+      <div class="sectiontitle">Adventure</div><div id="mainTitle" class="big">Spin for your next event.</div><div id="mainInfo" class="muted" style="margin-top:6px"></div>
+      <button id="eventBtn" class="btn primary" style="width:100%;margin-top:14px">Spin Adventure Event</button>
+    </div>
+
+    <div id="wheelBox" class="card hidden" style="margin-top:12px">
+      <div id="wheelTitle" class="big" style="text-align:center"></div>
+      <div class="wheelwrap" style="max-width:360px;margin-top:12px"><div class="pointer"></div><svg id="actionWheel" viewBox="0 0 420 420" style="width:100%"></svg><button id="spinAction" class="spin">SPIN</button></div>
+      <div id="result" style="text-align:center;font-weight:800;margin-top:10px"></div>
+    </div>
+
+    <div id="encounter" class="card hidden" style="margin-top:12px">
+      <div class="sectiontitle">Encounter</div><div id="enemy" class="big"></div><div id="enemyInfo" class="muted" style="margin-top:6px"></div><div id="odds" style="margin-top:8px;font-weight:700"></div><div id="danger" class="danger" style="margin-top:6px"></div>
+      <div class="grid g4" style="margin-top:14px"><button id="trainEncounter" class="btn">🥋 Train</button><button id="escape" class="btn">💨 Escape</button><button id="fight" class="btn primary">⚔️ Fight</button><button id="befriend" class="btn">🤝 Befriend</button></div>
+    </div>
+
+    <div id="tree" class="card hidden" style="margin-top:12px"><div class="big">🌳 Divine Tree</div><div class="muted" style="margin-top:6px">Rare event. The Chakra Fruit can transform your entire run.</div><div class="grid g2" style="margin-top:14px"><button id="eatFruit" class="btn primary">🍎 Eat Chakra Fruit</button><button id="leaveTree" class="btn">Leave</button></div></div>
+
+    <div class="card" style="margin-top:12px"><strong>Adventure Log</strong><div id="log" class="muted" style="margin-top:10px"><div class="logline">Your story begins.</div></div></div>
+  </section>
+</div>
+
+<script>
+(()=>{
+const root=document.getElementById('app'),q=s=>root.querySelector(s),NS='http://www.w3.org/2000/svg';
+window.addEventListener('error',e=>{
+  const s=q('#buildStatus');
+  if(s)s.textContent='Game error: '+(e.message||'unknown');
+});
+const CAP=6500, LEGACY_POWER=3000;
+let session=0;const timers=new Set();
+function later(fn,ms){const s=session,id=setTimeout(()=>{timers.delete(id);if(s===session)fn()},ms);timers.add(id)}
+function clearTimers(){timers.forEach(clearTimeout);timers.clear()}
+
+const base=[
+['Alignment',['Hero','Villain']],
+['Race / Origin',['Shinobi','Shinobi','Ōtsutsuki Descendant','Zetsu','Ōtsutsuki']],
+['Clan',['Uchiha','Uzumaki','Hyūga','Senju','Nara','Akimichi','Aburame','Inuzuka']],
+['Natural Eye',['None','None','Byakugan','Sharingan','Rinnegan','Tenseigan','Jōgan']],
+['Number of Kekkei Genkai',['1','1','2','2','3','4']],
+['Kekkei Genkai',['Wood Release','Ice Release','Lava Release','Magnet Release','Storm Release','Boil Release','Scorch Release','Crystal Release','None']],
+['Jinchūriki?',['Yes','No','No','No']],
+['Number of Chakra Natures',['1','1','2','2','3','4']],
+['Chakra Nature',['Fire','Wind','Lightning','Earth','Water']],
+['Strength',['Normal Human','Building Strength','Mountain Strength','Village Destroyer','Army-Level Strength','Multi-Army Strength','Bijū-Level Strength','Godlike Strength','Planetary Strength']],
+['Speed',['Normal','Genin Speed','Jōnin Speed','Lightning Speed','Near Light Speed','Light Speed','FTL Speed','Extreme FTL','Godlike Speed']],
+['Durability',['Normal Human','Wall Durability','House Durability','Mountain Durability','Village Durability','Bijū-Level Durability','Continental Durability','Godlike Durability','Planetary Durability']],
+['Specialty',['Ninjutsu','Taijutsu','Genjutsu','Medical Ninjutsu','Sealing Jutsu','Kenjutsu','Space-Time Ninjutsu']],
+['Weapon',['Kunai','Katana','Shuriken','War Fan','Chakra Blades','Staff','None']],
+['Summoning',['Toads','Snakes','Slugs','Ninken','Hawks','Monkeys','None']],
+['Rank',['Genin','Chūnin','Jōnin','ANBU','Kage-level','Missing-nin']],
+['Trait',['Huge Chakra','High Intelligence','Fast Learner','Regeneration','Perfect Chakra Control','Extreme Speed','Huge Stamina']]
+];
+const strT=base[9][1],spdT=base[10][1],durT=base[11][1];
+
+const beasts=[
+{name:'Shukaku',tails:1,seal:52},{name:'Matatabi',tails:2,seal:48},{name:'Isobu',tails:3,seal:44},
+{name:'Son Gokū',tails:4,seal:40},{name:'Kokuō',tails:5,seal:36},{name:'Saiken',tails:6,seal:32},
+{name:'Chōmei',tails:7,seal:28},{name:'Gyūki',tails:8,seal:23},{name:'Kurama',tails:9,seal:18},{name:'Ten-Tails',tails:10,seal:5}
+];
+const buildBeasts=beasts.slice(0,9).map(b=>`${b.name} — ${b.tails} Tails`);
+const clanBuffs={Uchiha:{s:0,v:2,d:1},Uzumaki:{s:1,v:0,d:3},Hyūga:{s:1,v:2,d:0},Senju:{s:2,v:1,d:2},Nara:{s:0,v:0,d:0},Akimichi:{s:2,v:0,d:1},Aburame:{s:0,v:0,d:1},Inuzuka:{s:1,v:1,d:0},'Ōtsutsuki Clan':{s:3,v:3,d:3},Zetsu:{s:1,v:0,d:1}};
+const raceBuffs={'Ōtsutsuki':{s:3,v:3,d:3},'Ōtsutsuki Descendant':{s:2,v:2,d:2},Zetsu:{s:1,v:0,d:2},Shinobi:{s:0,v:0,d:0}};
+const eyeValue={None:0,Byakugan:90,Sharingan:150,'Mangekyō Sharingan':180,'Eternal Mangekyō Sharingan':195,Rinnegan:200,Tenseigan:250,Jōgan:300,'Rinne Sharingan':350,'Sukunahikona Eye':375};
+const giftRarity={
+  'Byakugan':{rarity:'Uncommon',weight:24},
+  'Sharingan':{rarity:'Rare',weight:20},
+  'Mangekyō Sharingan':{rarity:'Epic',weight:12},
+  'Eternal Mangekyō Sharingan':{rarity:'Legendary',weight:8},
+  'Rinnegan':{rarity:'Legendary',weight:6},
+  'Tenseigan':{rarity:'Mythic',weight:4},
+  'Jōgan':{rarity:'Mythic',weight:3},
+  'Rinne Sharingan':{rarity:'Divine',weight:2},
+  'Sukunahikona Eye':{rarity:'Divine',weight:1},
+  'Divine Fruit':{rarity:'Divine',weight:2}
+};
+function weightedGiftPool(){
+  const arr=[];
+  Object.entries(giftRarity).forEach(([name,o])=>{for(let i=0;i<o.weight;i++)arr.push(name)});
+  return arr.sort(()=>Math.random()-.5);
+}
+
+
+const people=[
+{name:'Sakura Haruno',power:900,agg:45},{name:'Kakashi Hatake',power:1050,eye:'Sharingan',agg:58},{name:'Tsunade',power:1100,agg:55},{name:'Hiruzen Sarutobi',power:1125,agg:60},
+{name:'Jiraiya',power:1180,agg:58},{name:'Orochimaru',power:1225,agg:92,reanimate:true},{name:'Kabuto Yakushi',power:1275,agg:88,reanimate:true},{name:'Tobirama Senju',power:1350,clan:'Senju',agg:68,reanimate:true},
+{name:'Minato Namikaze',power:1450,agg:70},{name:'Itachi Uchiha',power:1450,eye:'Mangekyō Sharingan',clan:'Uchiha',agg:72},{name:'Obito Uchiha',power:1550,eye:'Mangekyō Sharingan',clan:'Uchiha',agg:88},
+{name:'Hashirama Senju',power:1650,clan:'Senju',agg:60},{name:'Madara Uchiha',power:1700,eye:'Rinne Sharingan',clan:'Uchiha',agg:96},{name:'Gaara',power:1150,beast:'Shukaku',agg:62},
+{name:'Yugito Nii',power:1050,beast:'Matatabi',agg:60},{name:'Yagura',power:1200,beast:'Isobu',agg:72},{name:'Rōshi',power:1125,beast:'Son Gokū',agg:66},{name:'Han',power:1150,beast:'Kokuō',agg:65},
+{name:'Utakata',power:1075,beast:'Saiken',agg:55},{name:'Fū',power:1075,beast:'Chōmei',agg:50},{name:'Killer B',power:1450,beast:'Gyūki',agg:55},{name:'Naruto Uzumaki',power:1750,beast:'Kurama',clan:'Uzumaki',agg:70},
+{name:'Neji Hyūga',power:850,eye:'Byakugan',clan:'Hyūga',agg:45},{name:'Hinata Hyūga',power:800,eye:'Byakugan',clan:'Hyūga',agg:30},{name:'Shisui Uchiha',power:1300,eye:'Mangekyō Sharingan',clan:'Uchiha',agg:65},
+{name:'Sasuke Uchiha',power:1750,eye:'Rinnegan',clan:'Uchiha',agg:82},{name:'Pain',power:1500,eye:'Rinnegan',agg:90},{name:'Nagato',power:1550,eye:'Rinnegan',clan:'Uzumaki',agg:85},
+{name:'Toneri Ōtsutsuki',power:2000,eye:'Tenseigan',race:'Ōtsutsuki Descendant',agg:85},{name:'Kinshiki Ōtsutsuki',power:2400,race:'Ōtsutsuki',agg:90},{name:'Urashiki Ōtsutsuki',power:2750,eye:'Rinnegan',race:'Ōtsutsuki',agg:95},
+{name:'Momoshiki Ōtsutsuki',power:3500,eye:'Rinnegan',race:'Ōtsutsuki',agg:100},{name:'Hagoromo Ōtsutsuki',power:4500,eye:'Rinnegan',race:'Ōtsutsuki',agg:65},{name:'Kaguya Ōtsutsuki',power:5500,eye:'Rinne Sharingan',race:'Ōtsutsuki',agg:100},
+{name:'Black Zetsu',power:1350,race:'Zetsu',agg:92},{name:'Isshiki Ōtsutsuki',power:6500,eye:'Sukunahikona Eye',race:'Ōtsutsuki',agg:100}
+];
+const groups=[
+{name:'Akatsuki',power:2400,agg:95,members:'Pain, Itachi, Kisame, Deidara, Sasori, Kakuzu, Hidan, Konan, Zetsu'},
+{name:'Five Kage',power:2700,agg:75,members:'Five Kage'},
+{name:'Team 7',power:3100,agg:78,members:'Naruto, Sasuke, Sakura, Kakashi'},
+{name:'Legendary Sannin',power:2500,agg:70,members:'Jiraiya, Tsunade, Orochimaru'},
+{name:'Uchiha Legends',power:3600,agg:100,members:'Madara, Obito, Itachi, Shisui'},
+{name:'Jinchūriki Alliance',power:4000,agg:85,members:'Multiple Jinchūriki'}
+];
+const reanimators=[{name:'Orochimaru',power:1225},{name:'Kabuto Yakushi',power:1275},{name:'Tobirama Senju',power:1350},{name:'Forbidden Jutsu Master',power:1150},{name:'Unknown Missing-nin',power:1000},{name:'Rogue Shinobi',power:950}];
+const heroNames=new Set(['Sakura Haruno','Kakashi Hatake','Tsunade','Hiruzen Sarutobi','Jiraiya','Tobirama Senju','Minato Namikaze','Hashirama Senju','Gaara','Yugito Nii','Yagura','Rōshi','Han','Utakata','Fū','Killer B','Naruto Uzumaki','Neji Hyūga','Hinata Hyūga','Shisui Uchiha','Sasuke Uchiha','Hagoromo Ōtsutsuki']);
+const villainNames=new Set(['Black Zetsu','Orochimaru','Kabuto Yakushi','Madara Uchiha','Obito Uchiha','Pain','Nagato','Kinshiki Ōtsutsuki','Urashiki Ōtsutsuki','Momoshiki Ōtsutsuki','Kaguya Ōtsutsuki','Isshiki Ōtsutsuki']);
+people.forEach(p=>p.faction=heroNames.has(p.name)?'Hero':villainNames.has(p.name)?'Villain':'Neutral');
+groups.forEach(g=>g.faction=({'Akatsuki':'Villain','Five Kage':'Hero','Team 7':'Hero','Legendary Sannin':'Hero','Uchiha Legends':'Villain','Jinchūriki Alliance':'Hero'})[g.name]||'Neutral');
+
+
+let cats=[],idx=0,rot=0,busy=false,picks=[],kgCount=1,kgs=[],natureCount=1,natures=[],current=null,currentType='',mode='',values=[],aRot=0,state,legacySeed=null,pendingLoss=[],pendingEyeTargets=[];
+
+function newState(){return{hp:100,ch:100,wins:0,training:0,str:0,spd:0,dur:0,eyeStage:0,bijuLevel:0,beasts:[],ten:false,stolenEyes:[],bonus:0,victoryBonus:0,baryonUsed:false,legacyTriggered:false,hokage:false,isHeir:false,reanimated:false,reanimator:null,edoSpins:0,friends:[],lastGift:'None',nativeArmLost:false,stolenArms:[],winLoot:[]}}
+function pol(r,a){const x=(a-90)*Math.PI/180;return{x:210+r*Math.cos(x),y:210+r*Math.sin(x)}}
+function arc(r,a,b){const p=pol(r,a),z=pol(r,b);return`M210 210L${p.x} ${p.y}A${r} ${r} 0 0 1 ${z.x} ${z.y}Z`}
+function draw(svg,vals,rotation,id){
+  svg.innerHTML='';
+  const sl=360/vals.length,g=document.createElementNS(NS,'g');
+  g.id=id;
+  g.style.transformOrigin='210px 210px';
+  g.style.transform=`rotate(${rotation}deg)`;
+  g.style.transition='transform 2s cubic-bezier(.1,.7,.15,1)';
+  vals.forEach((v,i)=>{
+    const start=i*sl,end=(i+1)*sl,mid=start+sl/2;
+    const p=document.createElementNS(NS,'path');
+    p.setAttribute('d',arc(190,start,end));
+    p.setAttribute('fill',`hsl(${(i*55+20)%360} 62% 42%)`);
+    p.setAttribute('stroke','#22293a');
+    p.setAttribute('stroke-width','2');
+    g.appendChild(p);
+
+    const z=pol(125,mid),t=document.createElementNS(NS,'text');
+    t.setAttribute('x',z.x); t.setAttribute('y',z.y);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('fill','white');
+    t.setAttribute('font-size',v.length>22?'7':v.length>16?'8.5':'10');
+    t.setAttribute('font-weight','700');
+    // keep labels upright on both sides
+    let ang=mid;
+    if(ang>90&&ang<270) ang+=180;
+    t.setAttribute('transform',`rotate(${ang} ${z.x} ${z.y})`);
+    t.textContent=v;
+    g.appendChild(t);
+  });
+  svg.appendChild(g);
+}
+function add(k,v){picks.push([k,v])} function get(k){return picks.find(x=>x[0]===k)?.[1]}
+function currentRace(){return get('Race / Origin')||'Unknown'}
+function currentClan(){return get('Clan')||'Unknown'}
+
+function lineage(){let b={s:0,v:0,d:0};[raceBuffs[get('Race / Origin')],clanBuffs[get('Clan')]].forEach(x=>{if(x){b.s+=x.s;b.v+=x.v;b.d+=x.d}});return{s:Math.min(3,b.s),v:Math.min(3,b.v),d:Math.min(3,b.d)}}
+function boosted(name){const arr=name==='Strength'?strT:name==='Speed'?spdT:durT,baseVal=get(name),i=Math.max(0,arr.indexOf(baseVal)),l=lineage(),tr=name==='Strength'?state.str:name==='Speed'?state.spd:state.dur,b=name==='Strength'?l.s:name==='Speed'?l.v:l.d,f=Math.min(arr.length-1,i+Math.min(3,b+tr));return{base:baseVal,final:arr[f],i:f}}
+function naturalEye(){const e=get('Natural Eye');if(e==='Sharingan')return ['Sharingan','Mangekyō Sharingan','Eternal Mangekyō Sharingan','Rinnegan'][Math.min(3,state.eyeStage)];if(e==='Byakugan')return state.eyeStage>=1?'Tenseigan':'Byakugan';return e||'None'}
+function currentBeast(){if(state.ten)return beasts[9];if(state.beasts.length)return state.beasts[state.beasts.length-1];return beasts.find(b=>String(get('Tailed Beast')||'').startsWith(b.name))||null}
+function bijuStageLabels(){const b=currentBeast();if(!b)return['None'];const arr=['Base Jinchūriki'];for(let i=1;i<=b.tails;i++)arr.push(`${i}-Tail Form`);arr.push('Chakra Mode','Mastered Chakra Mode','Full Tailed Beast');return arr}
+function form(){const arr=bijuStageLabels();const i=Math.min(arr.length-1,state.bijuLevel);return{label:arr[i],index:i,max:arr.length-1}}
+function masteredTier(){const b=currentBeast();if(!b)return 0;const i=form().index, tailEnd=b.tails; if(i===tailEnd+1)return 250; if(i===tailEnd+2)return 350; if(i>=tailEnd+3)return b.name==='Ten-Tails'?2000:500; return 0}
+function formMultiplier(){const b=currentBeast();if(!b)return 1;const i=form().index,tailEnd=b.tails; if(i===0)return 1.02; if(i<=tailEnd)return 1+0.04*i; if(i===tailEnd+1)return 1.45; if(i===tailEnd+2)return 1.65; return 1.9}
+function eyePower(){return(eyeValue[naturalEye()]||0)+state.stolenEyes.reduce((n,e)=>n+(eyeValue[e]||0),0)}
+function phys(n){return 120+boosted(n).i*85}
+function maxCh(){return 100+(get('Race / Origin')==='Ōtsutsuki'?250:get('Race / Origin')==='Ōtsutsuki Descendant'?100:get('Race / Origin')==='Zetsu'?50:0)+(currentBeast()?100:0)+(state.ten?200:0)}
+function rawPower(){let p=(phys('Strength')+phys('Speed')+phys('Durability'))/3+eyePower()+kgs.filter(x=>x!=='None').length*60+state.training*20+state.bonus+state.victoryBonus;if(get('Race / Origin')==='Ōtsutsuki')p+=700;else if(get('Race / Origin')==='Ōtsutsuki Descendant')p+=250;if(state.hokage)p=Math.max(p,1000);if(state.stolenEyes.length>=3)p*=1.5;p*=formMultiplier();p+=masteredTier();return Math.round(p)}
+function power(){return Math.min(CAP,rawPower())}
+function enemyPower(){if(currentType==='group')return current.power;if(currentType==='beast')return current.name==='Ten-Tails'?3000:900+current.tails*120;return current.power+(current.beast?500:0)}
+function weighted(ch,a,b){const arr=[];for(let i=0;i<20;i++)arr.push(i<Math.max(1,Math.min(19,Math.round(ch/5)))?a:b);return arr.sort(()=>Math.random()-.5)}
+function winChance(){if(power()===CAP&&enemyPower()===CAP)return 50;return Math.max(5,Math.min(95,Math.round(50+(power()-enemyPower())/55)))}
+function aggression(){return currentType==='group'?current.agg:currentType==='beast'?80+current.tails:current.agg||50}
+function escapeChance(){let c=72-(Math.max(0,enemyPower()-power())/70)-(aggression()-50)*.5;if(boosted('Speed').i>=7)c+=15;if(get('Specialty')==='Space-Time Ninjutsu')c+=25;return Math.max(5,Math.min(95,Math.round(c)))}
+function trainChance(){let c=68-(Math.max(0,enemyPower()-power())/65)-(aggression()-50)*.6;return Math.max(5,Math.min(95,Math.round(c)))}
+function canBefriend(){return currentType==='person'||currentType==='group'}
+function befriendChance(){if(!canBefriend())return 0;const mine=get('Alignment')||'Hero',theirs=current.faction||'Neutral';let c=theirs==='Neutral'?45:(mine===theirs?72:24);if(enemyPower()>power())c-=Math.min(20,Math.round((enemyPower()-power())/180));if(state.friends.includes(current.name))c=95;return Math.max(5,Math.min(95,c))}
+
+function sealingChance(b){let c=b.seal;if(get('Clan')==='Uzumaki')c+=35;if(get('Clan')==='Senju')c+=22;if(get('Race / Origin')==='Ōtsutsuki')c+=32;if(get('Race / Origin')==='Ōtsutsuki Descendant')c+=18;if(get('Specialty')==='Sealing Jutsu')c+=20;if(get('Trait')==='Perfect Chakra Control')c+=10;return Math.max(5,Math.min(95,c))}
+function eyeStealChance(){let c=22;if(get('Clan')==='Uchiha')c+=14;if(get('Clan')==='Hyūga')c+=10;if(get('Race / Origin')==='Ōtsutsuki')c+=18;if(get('Specialty')==='Medical Ninjutsu')c+=10;if(get('Trait')==='Perfect Chakra Control')c+=8;return Math.min(90,c)}
+function rewardAmount(){const e=enemyPower();if(e>=5000)return 40;if(e>=3500)return 35;if(e>=2200)return 30;if(e>=1600)return 25;if(e>=1200)return 20;if(e>=900)return 15;return 10}
+function ownedEyes(){const a=[];const n=naturalEye();if(n&&n!=='None')a.push({eye:n,natural:true});state.stolenEyes.forEach((e,i)=>a.push({eye:e,natural:false,index:i,label:`${e} [stolen ${i+1}]`}));return a}
+function nativeArmType(){
+  if(state.nativeArmLost)return null;
+  if(get('Race / Origin')==='Zetsu')return 'Zetsu Arm';
+  if(get('Clan')==='Senju')return 'Senju Arm';
+  if(get('Race / Origin')==='Ōtsutsuki'||get('Race / Origin')==='Ōtsutsuki Descendant')return 'Ōtsutsuki Arm';
+  return null;
+}
+function hasDanzoArm(){return state.stolenEyes.length>=3}
+function activeSurvivalArms(){
+  const a=[...state.stolenArms];
+  const n=nativeArmType(); if(n)a.unshift(n);
+  return a;
+}
+function armSurvivalBonus(){
+  const arms=activeSurvivalArms();
+  let b=0;
+  if(arms.includes('Senju Arm'))b=Math.max(b,15);
+  if(arms.includes('Zetsu Arm'))b=Math.max(b,20);
+  if(arms.includes('Ōtsutsuki Arm'))b=Math.max(b,25);
+  return b;
+}
+function survivalChance(){return Math.min(90,50+armSurvivalBonus())}
+function reanimateChance(){return Math.min(90,40+(hasDanzoArm()?25:0))}
+function enemyArmType(){
+  if(currentType!=='person')return null;
+  if(current.race==='Zetsu')return 'Zetsu Arm';
+  if(current.clan==='Senju')return 'Senju Arm';
+  if(current.race==='Ōtsutsuki'||current.race==='Ōtsutsuki Descendant')return 'Ōtsutsuki Arm';
+  return null;
+}
+function armStealChance(){
+  const a=enemyArmType(); if(!a)return 0;
+  let c=a==='Ōtsutsuki Arm'?28:a==='Zetsu Arm'?42:48;
+  if(get('Specialty')==='Medical Ninjutsu')c+=12;
+  if(get('Trait')==='Perfect Chakra Control')c+=8;
+  return Math.min(85,c);
+}
+function playerStealableArms(){
+  const a=[];
+  const n=nativeArmType(); if(n)a.push({type:n,native:true,label:`${n} [native]`});
+  state.stolenArms.forEach((x,i)=>a.push({type:x,native:false,index:i,label:`${x} [stolen ${i+1}]`}));
+  return a;
+}
+function removePlayerArm(label){
+  const arms=playerStealableArms();
+  const x=arms.find(a=>a.label===label)||arms.find(a=>a.type===label);
+  if(!x)return;
+  if(x.native)state.nativeArmLost=true;
+  else state.stolenArms.splice(x.index,1);
+  log(`🦾 ${current.name} stole your ${x.type}.`);
+  renderStats();
+}
+
+
+function eyeIcon(name){
+  const map={
+    'Byakugan':{iris:'#f2f2ff',ring:'#cfd5ff',pupil:'#bfc6ff'},
+    'Sharingan':{iris:'#e73c3c',ring:'#111',pupil:'#111',marks:'tomoe3'},
+    'Mangekyō Sharingan':{iris:'#d01f1f',ring:'#111',pupil:'#111',marks:'mangekyo'},
+    'Eternal Mangekyō Sharingan':{iris:'#b31111',ring:'#111',pupil:'#111',marks:'ems'},
+    'Rinnegan':{iris:'#7b61ff',ring:'#ccb9ff',pupil:'#2a1a6d',marks:'rinne'},
+    'Tenseigan':{iris:'#4fd5ff',ring:'#bff3ff',pupil:'#e7ffff',marks:'tensei'},
+    'Jōgan':{iris:'#bde2ff',ring:'#4ea0ff',pupil:'#0b2d66',marks:'plain'},
+    'Rinne Sharingan':{iris:'#7b0f84',ring:'#ff5082',pupil:'#20002d',marks:'rinne'},
+    'Sukunahikona Eye':{iris:'#f5cf45',ring:'#fff2a9',pupil:'#3a2500',marks:'sukun'},
+    'None':{iris:'#888',ring:'#bbb',pupil:'#333',marks:'plain'}
+  };
+  const c=map[name]||map['None'];
+  let extra='';
+  if(c.marks==='tomoe3'){
+    extra='<circle cx="45" cy="18" r="2.2" fill="#111"/><circle cx="33" cy="30" r="2.2" fill="#111"/><circle cx="57" cy="30" r="2.2" fill="#111"/>';
+  }else if(c.marks==='mangekyo'){
+    extra='<path d="M45 15 l4 6 -4 3 -4 -3z" fill="#111"/><path d="M34 29 l6 -1 1 6 -5 2z" fill="#111"/><path d="M56 29 l-6 -1 -1 6 5 2z" fill="#111"/>';
+  }else if(c.marks==='ems'){
+    extra='<circle cx="45" cy="24" r="10" fill="none" stroke="#111" stroke-width="2"/><path d="M45 14 L48 24 45 34 42 24Z" fill="#111"/><path d="M35 24 L45 21 55 24 45 27Z" fill="#111"/>';
+  }else if(c.marks==='rinne'){
+    extra='<circle cx="45" cy="24" r="5" fill="none" stroke="'+c.pupil+'" stroke-width="1.5"/><circle cx="45" cy="24" r="9" fill="none" stroke="'+c.pupil+'" stroke-width="1.3"/>';
+  }else if(c.marks==='tensei'){
+    extra='<circle cx="45" cy="24" r="9" fill="none" stroke="'+c.pupil+'" stroke-width="2"/><circle cx="45" cy="24" r="3" fill="'+c.pupil+'"/>';
+  }else if(c.marks==='sukun'){
+    extra='<rect x="42" y="16" width="6" height="16" rx="2" fill="'+c.pupil+'"/><circle cx="45" cy="24" r="3" fill="#fef3c7"/>';
+  }
+  return `<span class="eye-badge" title="${name}"><svg viewBox="0 0 90 48" aria-hidden="true"><path d="M4 24 C16 8, 30 4, 45 4 C60 4, 74 8, 86 24 C74 40, 60 44, 45 44 C30 44, 16 40, 4 24 Z" fill="#fff" stroke="#9aa3b2" stroke-width="2"/><ellipse cx="45" cy="24" rx="15" ry="15" fill="${c.iris}" stroke="${c.ring}" stroke-width="2"/><circle cx="45" cy="24" r="5" fill="${c.pupil}"/>${extra}<circle cx="50" cy="19" r="3" fill="#fff" opacity=".55"/></svg><span>${name}</span></span>`;
+}
+function eyeListHTML(names){
+  const arr=(Array.isArray(names)?names:[names]).filter(x=>x&&x!=='None');
+  if(!arr.length)return '<span class="muted">None</span>';
+  return `<span class="eye-list">${arr.map(eyeIcon).join('')}</span>`;
+}
+
+function renderProfile(){
+  const summary=`<div class="stat" style="margin-bottom:10px"><small>Current Race / Origin</small><b>${currentRace()}</b></div><div class="stat" style="margin-bottom:10px"><small>Current Clan</small><b>${currentClan()}</b></div>`;
+  const details=picks.map(([k,v])=>{
+    let valueHTML=`<strong>${v}</strong>`;
+    if(k==='Natural Eye'){v=naturalEye(); valueHTML=`<span class="compact-eye">${eyeListHTML([v])}</span>`;}
+    else if(k==='Kekkei Genkai' || k==='Innate Kekkei Genkai'){valueHTML=`<strong>${v}</strong>`;}
+    else if(['Strength','Speed','Durability'].includes(k)){v=`${boosted(k).base} → ${boosted(k).final}`; valueHTML=`<strong>${v}</strong>`;}
+    else if(k==='Race / Origin'){v=currentRace();valueHTML=`<strong>${v}</strong>`;}
+    else if(k==='Clan'){v=currentClan();valueHTML=`<strong>${v}</strong>`;}
+    return `<div class="sheetline"><span class="muted">${k}</span>${valueHTML}</div>`;
+  }).join('');
+  q('#profile').innerHTML=summary+details;
+}
+function renderStats(){q('#hp').textContent=state.reanimated?'∞ Edo':`${state.hp}/100`;q('#chakra').textContent=`${state.ch}/${maxCh()}`;q('#power').textContent=`${power()}${rawPower()>CAP?' CAP':''}`;q('#wins').textContent=state.wins;q('#victoryBonus').textContent=`+${state.victoryBonus}`;q('#form').textContent=form().label;q('#status').textContent=state.reanimated?`Edo • ${state.reanimator?.name}`:'Alive';q('#progression').innerHTML=`<div class="stat"><small>Natural Eye</small><b>${naturalEye()}</b></div><div class="stat"><small>Kekkei Genkai</small><b>${kgs.length?kgs.join(', '):'None'}</b></div><div class="stat"><small>Stolen Eyes</small><b>${state.stolenEyes.length?state.stolenEyes.join(', '):'None'}</b><small>${state.stolenEyes.length>=3?'Eye arm ×1.5 active':'3+ activates eye arm'}</small></div><div class="stat"><small>Bijū</small><b>${currentBeast()?.name||'None'}</b><small>${form().label} • +${masteredTier()}</small></div><div class="stat"><small>Baryon</small><b>${currentBeast()&&form().index===form().max&&!state.baryonUsed?'READY':'Unavailable'}</b></div><div class="stat"><small>Legacy</small><b>${state.isHeir?'Heir':state.hokage?'Hokage':'Original'}</b></div><div class="stat"><small>Faction / Friends</small><b>${get('Alignment')||'Unknown'} • ${state.friends.length} friend${state.friends.length===1?'':'s'}</b><small>Last gift: ${state.lastGift}</small></div><div class="stat"><small>Arms</small><b>${[...(nativeArmType()?[nativeArmType()]:[]),...state.stolenArms,...(hasDanzoArm()?['Danzō Eye Arm']:[])].join(', ')||'Normal'}</b><small>Survival ${survivalChance()}% • Reanimation ${reanimateChance()}%</small></div>`;renderProfile();checkLegacy()}
+function log(x){q('#log').insertAdjacentHTML('afterbegin',`<div class="logline">${x}</div>`)}
+function renderBuild(){q('#cat').textContent=cats[idx][0];q('#step').textContent=`${idx+1}/${cats.length}`;q('#buildStatus').textContent=`Spin for ${cats[idx][0].toLowerCase()}.`;renderProfile();draw(q('#buildWheel'),cats[idx][1],rot,'bg')}
+
+function reset(seed=null){session++;clearTimers();legacySeed=seed;cats=JSON.parse(JSON.stringify(base));idx=0;rot=0;busy=false;picks=[];kgCount=1;kgs=[];natureCount=1;natures=[];current=null;currentType='';mode='';values=[];aRot=0;pendingLoss=[];pendingEyeTargets=[];state=newState();q('#log').innerHTML='<div class="logline">Your story begins.</div>';q('#build').classList.remove('hidden');q('#adv').classList.add('hidden');q('#wheelBox').classList.add('hidden');q('#encounter').classList.add('hidden');q('#tree').classList.add('hidden');q('#mainCard').classList.remove('hidden');q('#eventBtn').disabled=false;q('#spinAction').disabled=false;q('#spinBuild').disabled=false;q('#spinBuild').textContent='SPIN';q('#title').textContent=seed?'Build the Next Generation — V19':'Build Your Shinobi — V19';if(seed){state.isHeir=true;cats[0]=['Alignment',[seed.alignment,seed.alignment,seed.alignment==='Hero'?'Villain':'Hero']];cats[1]=['Race / Origin',[seed.race,seed.race,'Shinobi']];cats[2]=['Clan',[seed.clan]];cats[3]=['Natural Eye',['Sharingan','Byakugan','Rinnegan','Tenseigan','Jōgan','Jōgan','Rinnegan']];cats[6]=['Jinchūriki?',['Yes','Yes','Yes','No']]}renderBuild()}
+
+function spinBuildNow(){
+  q('#buildStatus').textContent='Tap registered — spinning...';
+  if(busy)return;
+  const btn=q('#spinBuild');
+  const vals=cats[idx][1];
+  if(!vals||!vals.length)return;
+  busy=true;btn.disabled=true;btn.textContent='...';
+  q('#buildStatus').textContent='Spinning...';
+  const c=Math.floor(Math.random()*vals.length),sl=360/vals.length;
+  const startRot=rot;
+  const targetRot=startRot+1440+270-(c*sl+sl/2);
+  draw(q('#buildWheel'),vals,startRot,'bg');
+  const g=q('#bg');
+  if(g){
+    g.getBoundingClientRect();
+    requestAnimationFrame(()=>{g.style.transform=`rotate(${targetRot}deg)`;});
+  }
+  rot=targetRot;
+  later(()=>{
+const k=cats[idx][0],v=vals[c];
+if(k==='Alignment'){add(k,v)}else if(k==='Race / Origin'){add(k,v);if(v==='Ōtsutsuki'){cats[2][1]=['Ōtsutsuki Clan'];cats[3][1]=['Byakugan','Rinnegan','Tenseigan','Jōgan']}else if(v==='Zetsu'){cats[2][1]=['Zetsu'];kgs.push('Wood Release');add('Innate Kekkei Genkai','Wood Release')}}
+else if(k==='Clan'){add(k,v);if(v==='Uchiha')cats[3]=['Natural Eye',['Sharingan']];if(v==='Hyūga')cats[3]=['Natural Eye',['Byakugan']];if(v==='Senju'&&!kgs.includes('Wood Release')){kgs.push('Wood Release');add('Innate Kekkei Genkai','Wood Release')}}
+else if(k==='Natural Eye')add(k,v);
+else if(k==='Number of Kekkei Genkai'){kgCount=+v;add(k,v)}
+else if(k==='Kekkei Genkai'){if(v!=='None'&&!kgs.includes(v))kgs.push(v);if(kgs.length<kgCount){cats[idx][1]=cats[idx][1].filter(x=>x!==v);rot=0;busy=false;q('#spinBuild').disabled=false;q('#spinBuild').textContent='SPIN';draw(q('#buildWheel'),cats[idx][1],0,'bg');return}else add('Kekkei Genkai',kgs.join(', ')||'None')}
+else if(k==='Jinchūriki?'){add(k,v);if(v==='Yes')cats.splice(idx+1,0,['Tailed Beast',buildBeasts])}
+else if(k==='Number of Chakra Natures'){natureCount=+v;add(k,v)}
+else if(k==='Chakra Nature'){natures.push(v);if(natures.length<natureCount){cats[idx][1]=cats[idx][1].filter(x=>x!==v);rot=0;busy=false;q('#spinBuild').disabled=false;q('#spinBuild').textContent='SPIN';draw(q('#buildWheel'),cats[idx][1],0,'bg');return}else add('Chakra Natures',natures.join(', '))}
+else add(k,v);
+if(idx<cats.length-1){idx++;rot=0;busy=false;q('#spinBuild').disabled=false;q('#spinBuild').textContent='SPIN';renderBuild()}else{q('#build').classList.add('hidden');q('#adv').classList.remove('hidden');state.ch=maxCh();renderStats();main()}
+  },2050)
+}
+function main(){q('#wheelBox').classList.add('hidden');q('#encounter').classList.add('hidden');q('#tree').classList.add('hidden');q('#mainCard').classList.remove('hidden');q('#eventBtn').disabled=false;q('#spinAction').disabled=false;if(state.reanimated){q('#mainTitle').textContent=`${state.reanimator.name} commands your next mission.`;q('#mainInfo').textContent='Every 2 Edo missions you get a chance to break control.';q('#eventBtn').textContent='Spin Reanimation Mission'}else{q('#mainTitle').textContent='Spin for your next event.';q('#mainInfo').textContent='Strong opponents can stop you from escaping or training.';q('#eventBtn').textContent='Spin Adventure Event'}}
+function openWheel(t,m,vals){mode=m;values=vals;aRot=0;q('#mainCard').classList.add('hidden');q('#encounter').classList.add('hidden');q('#tree').classList.add('hidden');q('#wheelBox').classList.remove('hidden');q('#wheelTitle').textContent=t;q('#result').textContent='';q('#spinAction').disabled=false;q('#spinAction').textContent='SPIN';draw(q('#actionWheel'),vals,0,'ag')}
+function showEncounter(){q('#wheelBox').classList.add('hidden');q('#mainCard').classList.add('hidden');q('#encounter').classList.remove('hidden');q('#enemy').textContent=current.name;q('#enemyInfo').innerHTML=`Power ${enemyPower()}${current.eye?` • Eye: ${eyeIcon(current.eye)}`:''}${current.beast?` • Jinchūriki: ${current.beast}`:''}${current.faction?` • Faction: ${current.faction}`:''}`;q('#odds').textContent=`Fight ${winChance()}% • Escape ${escapeChance()}% • Train safely ${trainChance()}%${canBefriend()?` • Befriend ${befriendChance()}%`:''}`;q('#danger').textContent=enemyPower()>power()*1.4?'⚠️ This opponent greatly outclasses you and may force combat.':'';q('#befriend').classList.toggle('hidden',!canBefriend())}
+
+q('#eventBtn').onclick=()=>{q('#eventBtn').disabled=true;if(state.reanimated){const pool=people.filter(x=>x.name!==state.reanimator.name);currentType='person';current=pool[Math.floor(Math.random()*pool.length)];state.edoSpins++;log(`🪦 Edo mission ${state.edoSpins}: ${state.reanimator.name} orders you to fight ${current.name}.`);if(state.edoSpins%2===0)return later(()=>openWheel('Break Edo Tensei control?','edoBreak',weighted(35,'BREAK FREE','CONTROLLED')),450);return showEncounter()}openWheel('Adventure Event','event',['Shinobi','Shinobi','Group','Jinchūriki','Ōtsutsuki','Wild Bijū','Train','Train','Divine Tree'])};
+function spinActionNow(){
+  q('#result').textContent='Tap registered — spinning...';
+  const btn=q('#spinAction');
+  if(btn.disabled||!values||!values.length)return;
+  btn.disabled=true;btn.textContent='...';
+  q('#result').textContent='Spinning...';
+  const c=Math.floor(Math.random()*values.length),sl=360/values.length;
+  const startRot=aRot,target=startRot+1440+270-(c*sl+sl/2);
+  draw(q('#actionWheel'),values,startRot,'ag');
+  const g=q('#ag');
+  if(g){
+    g.getBoundingClientRect();
+    requestAnimationFrame(()=>{g.style.transform=`rotate(${target}deg)`;});
+  }
+  aRot=target;
+  later(()=>{btn.textContent='SPIN';handle(values[c])},2050);
+}
+function victory(){const g=rewardAmount();state.victoryBonus+=g;state.wins++;log(`💥 Defeating ${current.name} grants +${g} permanent power.`)}
+function addBeast(b){const old=currentBeast();if(!old){state.beasts=[b];state.ten=b.name==='Ten-Tails';state.bijuLevel=0;log(`🔒 ${b.name} sealed. You became a Jinchūriki.`);return}if(b.name==='Ten-Tails'){state.beasts=[b];state.ten=true;state.bijuLevel=0;log(`🔟 The Ten-Tails replaced ${old.name}. Your Bijū progression restarts as the Jūbi host.`);return}if(state.bijuLevel>0){if(b.tails<old.tails){state.bijuLevel=Math.min(bijuStageLabels().length-1,state.bijuLevel+1);log(`🐾 ${b.name}'s chakra strengthens your evolved ${old.name} and advances it to ${form().label}.`)}else{log(`🚫 ${old.name} has already evolved. It cannot be replaced by ${b.name}; only the Ten-Tails can replace an evolved Bijū.`)}return}state.beasts=[b];state.ten=false;state.bijuLevel=0;log(`🔄 ${b.name} replaced ${old.name} as your current Tailed Beast.`)}
+function postWin(){
+  victory();
+  state.winLoot=[];
+  if(currentType==='beast'){state.winLoot.push({kind:'beastWild'});}
+  else{
+    if(enemyArmType())state.winLoot.push({kind:'arm'});
+    if(current.eye)state.winLoot.push({kind:'eye'});
+    if(current.beast)state.winLoot.push({kind:'beastHost'});
+  }
+  resolveWinLoot();
+}
+function resolveWinLoot(){
+  if(!state.winLoot.length){renderStats();return later(main,650)}
+  const item=state.winLoot.shift();
+  if(item.kind==='arm'){
+    const ch=armStealChance();
+    return openWheel(`Steal ${enemyArmType()} from ${current.name}? — ${ch}%`,'stealArm',weighted(ch,'SUCCESS','FAILED'));
+  }
+  if(item.kind==='eye'){
+    const ch=eyeStealChance();
+    return openWheel(`Steal ${current.eye}? — ${ch}%`,'stealEye',weighted(ch,'SUCCESS','FAILED'));
+  }
+  if(item.kind==='beastHost'){
+    const b=beasts.find(x=>x.name===current.beast),ch=Math.max(5,sealingChance(b)-10);
+    return openWheel(`Extract ${b.name}? — ${ch}%`,'extract',weighted(ch,'SEALED','FAILED'));
+  }
+  if(item.kind==='beastWild'){
+    const ch=sealingChance(current);
+    return openWheel(`Seal ${current.name}? — ${ch}%`,'seal',weighted(ch,'SEALED','FAILED'));
+  }
+}
+
+function enemyEyeChance(){if(currentType==='beast'&&current.name==='Ten-Tails')return 0;return Math.min(85,20+Math.max(0,enemyPower()-power())/75+(current.race==='Ōtsutsuki'?20:0))}
+function enemyBijuChance(){return Math.min(80,18+Math.max(0,enemyPower()-power())/80+(current.race==='Ōtsutsuki'?20:0))}
+function beginLossLoot(){
+  pendingLoss=[];
+  if(playerStealableArms().length)pendingLoss.push('arm');
+  if(ownedEyes().length&&!(currentType==='beast'&&current.name==='Ten-Tails'))pendingLoss.push('eye');
+  if(currentBeast())pendingLoss.push('biju');
+  resolveLossLoot();
+}
+function resolveLossLoot(){
+  if(!pendingLoss.length)return finishLoss();
+  const x=pendingLoss.shift();
+  if(x==='arm'){
+    const arms=playerStealableArms();
+    if(!arms.length)return resolveLossLoot();
+    return openWheel(`${current.name} tries to steal one of your special arms — fight back?`,'armFightBack',['FIGHT BACK','FIGHT BACK','ARM STOLEN','ARM STOLEN']);
+  }
+  if(x==='eye')return openWheel(`${current.name} tries to take an eye — fight back?`,'eyeFightBack',['FIGHT BACK','FIGHT BACK','FAIL','FAIL']);
+  if(currentBeast()?.name==='Ten-Tails')return openWheel(`${current.name} tries to steal your Jūbi`,'jubiDefense',['STOLEN','STOLEN','STOLEN','EVOLVE & KILL','EVOLVE & KILL']);
+  return openWheel(`${current.name} tries to extract ${currentBeast().name}`,'enemyBiju',weighted(enemyBijuChance(),'SEALED AWAY','SAFE'));
+}
+function finishLoss(){
+  if(state.reanimated){log('🪦 Your Edo body regenerates.');return later(main,650)}
+  const ch=survivalChance();
+  openWheel(`You lost — survive? ${ch}%${armSurvivalBonus()?` (special arm +${armSurvivalBonus()}%)`:''}`,'survive',weighted(ch,'SURVIVE','DIE'));
+}
+function removeEyeByLabel(label){const eyes=ownedEyes();let x=eyes.find(e=>(e.label||e.eye)===label)||eyes.find(e=>e.eye===label);if(!x)return;if(x.natural){const p=picks.find(z=>z[0]==='Natural Eye');if(p)p[1]='None';state.eyeStage=0}else{state.stolenEyes.splice(x.index,1)}log(`👁️ ${current.name} stole your ${x.eye}.`);renderStats()}
+
+function handle(res){q('#result').textContent=res;
+if(mode==='event'){if(res==='Train')return later(()=>openWheel('What do you train?','train',['Strength','Speed','Durability','Kekkei Genkai','Tailed Beast']),450);if(res==='Divine Tree'){q('#wheelBox').classList.add('hidden');q('#tree').classList.remove('hidden');return}if(res==='Group'){currentType='group';current=groups[Math.floor(Math.random()*groups.length)]}else if(res==='Wild Bijū'){currentType='beast';current=beasts[Math.floor(Math.random()*9)]}else if(res==='Jinchūriki'){const p=people.filter(x=>x.beast);currentType='person';current=p[Math.floor(Math.random()*p.length)]}else if(res==='Ōtsutsuki'){const p=people.filter(x=>String(x.race||'').includes('Ōtsutsuki'));currentType='person';current=p[Math.floor(Math.random()*p.length)]}else{currentType='person';current=people[Math.floor(Math.random()*people.length)]}showEncounter();return}
+
+if(mode==='attemptEscape'){if(res==='ESCAPED'){log(`💨 Escaped from ${current.name}.`);return later(main,600)}log(`⚠️ ${current.name} blocks your escape.`);return later(()=>openWheel(`Forced fight: ${current.name}`,'fight',weighted(winChance(),'WIN','LOSE')),450)}
+if(mode==='attemptTrain'){if(res==='ALLOWED')return later(()=>openWheel('What do you train?','train',['Strength','Speed','Durability','Kekkei Genkai','Tailed Beast']),450);log(`⚠️ ${current.name} attacks before you can train.`);return later(()=>openWheel(`Forced fight: ${current.name}`,'fight',weighted(winChance(),'WIN','LOSE')),450)}
+if(mode==='befriend'){if(res==='FRIEND'){if(!state.friends.includes(current.name))state.friends.push(current.name);log(`🤝 You befriended ${current.name}. ${get('Alignment')===current.faction?'Matching alignment helped.':''}`);renderStats();return later(()=>openWheel(`${current.name} friendship gift? — 80%`,'friendGift',weighted(80,'GIFT','NO GIFT')),500)}log(`❌ ${current.name} rejected your attempt to befriend them.`);if(enemyPower()>power()*1.25&&aggression()>=75){log(`⚠️ ${current.name} takes offense and attacks.`);return later(()=>openWheel(`Forced fight: ${current.name}`,'fight',weighted(winChance(),'WIN','LOSE')),450)}return later(main,650)}
+if(mode==='friendGift'){if(res==='NO GIFT'){state.lastGift='None';log(`🎁 ${current.name} became your friend but gave no gift this time.`);renderStats();return later(main,650)}return later(()=>openWheel('Friendship Gift — rarity based','giftReward',weightedGiftPool()),500)}
+if(mode==='giftReward'){
+  const meta=giftRarity[res]||{rarity:'Unknown'};
+  state.lastGift=`${res} (${meta.rarity})`;
+  if(res==='Divine Fruit'){
+    log(`🍎 ${current.name} gifted you a Divine Fruit — ${meta.rarity} rarity!`);
+    return later(()=>openWheel('Eat the gifted Divine Fruit?','giftFruit',['EAT','EAT','SAVE']),500);
+  }
+  state.stolenEyes.push(res);
+  log(`🎁 ${current.name} gifted you ${res} — ${meta.rarity} rarity. It gives +${eyeValue[res]||0} power.`);
+  if(state.stolenEyes.length===3)log('🦾 Your third extra eye activates the ×1.5 eye-arm multiplier.');
+  renderStats();
+  return later(main,700);
+}
+if(mode==='giftFruit'){
+  if(res==='SAVE'){state.bonus+=50;log('🍎 You saved the Divine Fruit. Its residual chakra grants +50 permanent power.');renderStats();return later(main,700)}
+  return later(()=>openWheel('Gifted Divine Fruit Outcome','fruit',['BECOME ŌTSUTSUKI','TEN-TAILS','+100 POWER','+100 POWER','NOTHING','NOTHING','NOTHING','NOTHING','DIE']),500);
+}
+
+
+if(mode==='train'){state.training++;if(res==='Strength')state.str++;else if(res==='Speed')state.spd++;else if(res==='Durability')state.dur++;else if(res==='Kekkei Genkai'){const e=naturalEye();if(['Sharingan','Mangekyō Sharingan','Eternal Mangekyō Sharingan'].includes(e)){state.eyeStage=Math.min(3,state.eyeStage+1);log(`👁️ ${e} evolved into ${naturalEye()}.`)}else if(e==='Byakugan'){state.eyeStage=1;log('👁️ Byakugan evolved into Tenseigan.')}else log('🧬 Kekkei Genkai training increased mastery.')}else if(res==='Tailed Beast'){if(currentBeast()){state.bijuLevel=Math.min(bijuStageLabels().length-1,state.bijuLevel+1);log(`🐾 Bijū advanced to ${form().label}.`)}else log('🐾 You do not have a Tailed Beast yet.')}renderStats();return later(main,650)}
+
+if(mode==='fight'){if(res==='WIN')return postWin();log(`❌ ${current.name} defeated you.`);return later(beginLossLoot,450)}
+
+if(mode==='armFightBack'){
+  if(res==='FIGHT BACK'){log(`🦾 You fought back and protected your arm.`);return later(resolveLossLoot,500)}
+  const arms=playerStealableArms();
+  if(!arms.length)return later(resolveLossLoot,450);
+  if(arms.length===1){removePlayerArm(arms[0].label);return later(resolveLossLoot,500)}
+  return later(()=>openWheel('Which special arm gets stolen?','whichArm',arms.map(a=>a.label)),450);
+}
+if(mode==='whichArm'){removePlayerArm(res);return later(resolveLossLoot,500)}
+
+if(mode==='stealArm'){
+  if(res==='SUCCESS'){
+    const arm=enemyArmType();
+    if(arm){state.stolenArms.push(arm);log(`🦾 You stole ${current.name}'s ${arm}. Your survival odds improve while you keep it.`);}
+  }else log(`❌ You failed to steal ${current.name}'s arm.`);
+  renderStats();
+  return later(resolveWinLoot,550);
+}
+
+if(mode==='eyeFightBack'){if(res==='FIGHT BACK'){log(`⚔️ You fought back, escaped alive, and kept your eyes.`);state.hp=Math.max(1,state.hp-20);renderStats();return later(main,700)}pendingEyeTargets=ownedEyes();if(!pendingEyeTargets.length)return later(resolveLossLoot,450);if(pendingEyeTargets.length===1){removeEyeByLabel(pendingEyeTargets[0].label||pendingEyeTargets[0].eye);return later(resolveLossLoot,450)}return later(()=>openWheel('Which eye gets stolen?','whichEye',pendingEyeTargets.map(x=>x.label||x.eye)),450)}
+if(mode==='whichEye'){removeEyeByLabel(res);return later(resolveLossLoot,450)}
+
+if(mode==='jubiDefense'){if(res==='EVOLVE & KILL'){state.bijuLevel=Math.min(bijuStageLabels().length-1,state.bijuLevel+1);state.wins++;state.victoryBonus+=rewardAmount();log(`🔟 Your Jūbi evolved instead. You killed ${current.name} and survived.`);renderStats();return later(main,750)}const lost=currentBeast();state.ten=false;state.beasts=state.beasts.filter(b=>b.name!==lost.name);state.bijuLevel=0;log(`🔒 ${current.name} successfully stole your Jūbi.`);renderStats();return later(finishLoss,600)}
+
+if(mode==='enemyBiju'){if(res==='SEALED AWAY'){const b=currentBeast();state.beasts=state.beasts.filter(x=>x.name!==b.name);const i=picks.findIndex(x=>x[0]==='Tailed Beast'&&String(x[1]).startsWith(b.name));if(i>=0)picks.splice(i,1);state.ten=false;state.bijuLevel=0;log(`🔒 ${current.name} extracted ${b.name}.`);renderStats()}else log('🐾 Your Bijū resisted extraction.');return later(resolveLossLoot,450)}
+
+if(mode==='survive'){if(res==='SURVIVE'){state.hp=Math.max(1,state.hp-35);renderStats();return later(main,650)}if(currentBeast()&&form().index===form().max&&!state.baryonUsed){const lost=currentBeast();state.baryonUsed=true;log(`🔥 BARYON MODE activated. Temporary combat power exceeds the ${CAP} cap.`);log(`⚔️ ${current.name} is automatically defeated.`);state.wins++;state.victoryBonus+=rewardAmount();state.beasts=state.beasts.filter(x=>x.name!==lost.name);const i=picks.findIndex(x=>x[0]==='Tailed Beast'&&String(x[1]).startsWith(lost.name));if(i>=0)picks.splice(i,1);state.ten=false;state.bijuLevel=0;state.hp=20;log(`💀 ${lost.name} was permanently consumed.`);renderStats();return later(main,850)}return later(()=>openWheel(`Will someone reanimate you? — ${reanimateChance()}%${hasDanzoArm()?' (Danzō arm bonus)':''}`,'reanimate',weighted(reanimateChance(),'REANIMATED','STAY DEAD')),450)}
+
+if(mode==='reanimate'){if(res==='REANIMATED'){state.reanimated=true;state.reanimator=reanimators[Math.floor(Math.random()*reanimators.length)];state.hp=100;log(`🪦 ${state.reanimator.name} reanimated you.`);renderStats();return later(main,750)}q('#wheelTitle').textContent='Your story ends.';q('#result').textContent='☠️ No reanimation.';return later(()=>reset(),1600)}
+
+if(mode==='edoBreak'){if(res==='BREAK FREE'){const master=state.reanimator;state.reanimated=false;state.reanimator=null;currentType='person';current={name:master.name,power:master.power,agg:100};log(`⛓️ You broke free. Now defeat ${master.name}.`);renderStats();return later(showEncounter,650)}log('🪦 Edo control remains active.');return later(main,650)}
+
+if(mode==='seal'||mode==='extract'){if(res==='SEALED'){const b=mode==='seal'?current:beasts.find(x=>x.name===current.beast);addBeast(b);renderStats()}else log('❌ Sealing failed.');return later(resolveWinLoot,550)}
+
+if(mode==='stealEye'){if(res==='SUCCESS'){state.stolenEyes.push(current.eye);log(`👁️ You stole ${current.eye}. +${eyeValue[current.eye]||0} power from that eye.`);if(state.stolenEyes.length===3)log('🦾 Three stolen eyes activated the Danzō-style eye arm and ×1.5 multiplier.');renderStats()}else log('❌ Eye theft failed.');return later(resolveWinLoot,550)}
+
+if(mode==='fruit'){if(res==='BECOME ŌTSUTSUKI'){const p=picks.find(x=>x[0]==='Race / Origin');if(p)p[1]='Ōtsutsuki';state.bonus+=100;log('🍎 You became an Ōtsutsuki.')}else if(res==='TEN-TAILS'){state.ten=true;state.bijuLevel=0;log('🔟 You became the Ten-Tails host.')}else if(res==='+100 POWER'){state.bonus+=100;log('💥 +100 permanent power.')}else if(res==='DIE')return later(()=>openWheel(`Will someone reanimate you? — ${reanimateChance()}%${hasDanzoArm()?' (Danzō arm bonus)':''}`,'reanimate',weighted(reanimateChance(),'REANIMATED','STAY DEAD')),450);else log('🌳 Nothing happened.');renderStats();return later(main,650)}
+
+if(mode==='legacy'){if(res==='FOUND VILLAGE'){state.hokage=true;const seed={clan:get('Clan'),race:get('Race / Origin'),alignment:get('Alignment')};log('🏯 You founded a village and became Hokage. Your next character is your child with the same clan, better rare-eye odds, and higher Jinchūriki odds.');return later(()=>reset(seed),1100)}if(res==='FORBIDDEN EYE')return later(()=>openWheel('Forbidden Eye Destiny','legacyEye',['JŌGAN','RINNE SHARINGAN','FAILED','FAILED']),450);if(res==='OLD AGE'){if(get('Race / Origin')==='Ōtsutsuki'){state.bonus+=100;log('♾️ Your Ōtsutsuki body survives old age.');renderStats();return later(main,650)}return later(()=>openWheel(`Old age — reanimation? ${reanimateChance()}%`,'reanimate',weighted(reanimateChance(),'REANIMATED','STAY DEAD')),450)}}
+
+if(mode==='legacyEye'){if(res==='JŌGAN'){state.stolenEyes.push('Jōgan');log('👁️ A stolen eye awakened into Jōgan (+300).')}else if(res==='RINNE SHARINGAN'){state.stolenEyes.push('Rinne Sharingan');log('👁️ A stolen eye awakened into Rinne Sharingan (+350).')}else log('❌ Eye awakening failed.');renderStats();const p=people.filter(x=>x.race==='Ōtsutsuki');currentType='person';current=p[Math.floor(Math.random()*p.length)];log(`⚠️ ${current.name} immediately appears to fight you.`);return later(showEncounter,650)}
+}
+
+function checkLegacy(){if(state.legacyTriggered||power()<LEGACY_POWER||state.reanimated)return;state.legacyTriggered=true;log(`🌟 ${LEGACY_POWER} POWER REACHED — Special Legacy Wheel unlocked.`);later(()=>openWheel(`${LEGACY_POWER} Power Legacy Wheel`,'legacy',['FOUND VILLAGE','FORBIDDEN EYE','OLD AGE']),550)}
+
+q('#fight').onclick=()=>openWheel(`Fight ${current.name}`,'fight',weighted(winChance(),'WIN','LOSE'));
+q('#escape').onclick=()=>openWheel(`Escape ${current.name}? — ${escapeChance()}%`,'attemptEscape',weighted(escapeChance(),'ESCAPED','CAUGHT'));
+q('#trainEncounter').onclick=()=>openWheel(`Can you train safely? — ${trainChance()}%`,'attemptTrain',weighted(trainChance(),'ALLOWED','ATTACKED'));
+q('#befriend').onclick=()=>openWheel(`Befriend ${current.name}? — ${befriendChance()}%`,'befriend',weighted(befriendChance(),'FRIEND','REJECTED'));q('#eatFruit').onclick=()=>openWheel('Eat Chakra Fruit','fruit',['BECOME ŌTSUTSUKI','TEN-TAILS','+100 POWER','+100 POWER','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','NOTHING','DIE']);
+q('#leaveTree').onclick=main;
+q('#restart').onclick=()=>reset();
+
+function bindSpinButton(el, fn){
+  if(!el)return;
+  el.disabled=false;
+  el.style.pointerEvents='auto';
+  el.style.touchAction='manipulation';
+  el.onclick=function(ev){
+    if(ev){ev.preventDefault();ev.stopPropagation();}
+    fn();
+  };
+}
+
+// Bind controls only after every function exists.
+bindSpinButton(q('#spinBuild'), spinBuildNow);
+bindSpinButton(q('#spinAction'), spinActionNow);
+
+// Actually initialize the game.
+reset();
+})();
+</script>
+</body></html>
